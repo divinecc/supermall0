@@ -1,6 +1,6 @@
 @import "./normalize.css"; /*引用了normalize, 才能生效*/
 
-:root {
+:root {  /* :root 是一个伪类，用于获取根元素html    下面的这些东西是定义的变量 */   
   --color-text: #666;
   /* 高亮颜色 */
   --color-high-text: #ff5777;
