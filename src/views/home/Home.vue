@@ -1,7 +1,14 @@
 <template>
   <div id="home">
     <nav-bar class="home-nav"><div slot="center">购物街</div></nav-bar>
-    <scroll class="content">
+    <scroll
+      class="content"
+      ref="scroll"
+      :probe-type="3"
+      @scroll="contentScroll"
+      :pull-up-load="true"
+      @pullingUp="loadMore"
+    >
       <home-swiper :banners="banners" />
       <recommend-view :recommends="recommends" />
       <feature-view />
@@ -12,7 +19,7 @@
       />
       <good-list :goods="showGoods" />
     </scroll>
-    <back-top />
+    <back-top @click.native="backClick" v-show="isShowBackTop" />
   </div>
 </template>
 
@@ -51,6 +58,7 @@ export default {
         sell: { page: 0, list: [] },
       },
       currentType: "pop",
+      isShowBackTop: false,
     };
   },
   computed: {
@@ -69,7 +77,9 @@ export default {
   },
 
   methods: {
-    //以下是事件监听相关方法
+    /*
+      以下是事件监听相关方法
+    */
     tabClick(index) {
       switch (index) {
         case 0:
@@ -83,7 +93,22 @@ export default {
           break;
       }
     },
-    //以下是网络请求相关方法
+    backClick() {
+      //scrollTo方法是就是指定页面滚到哪个坐标，第一个和第二个参数就是x和y坐标，第三个参数是滚动的时间
+      //this.$refs.scroll.scroll.scrollTo(0, 0, 500); //第一个scroll是上面组件定义的ref=scroll的scroll，第二个scroll是 Scroll.vue里面的data里面的scroll
+      this.$refs.scroll.scrollTo(0, 0, 500);
+    },
+    contentScroll(position) {
+      this.isShowBackTop = -position.y > 1000; //加负号是y值始终是一个负值
+    },
+    loadMore() {
+      this.getHomeGoods(this.currentType);
+      this.$refs.scroll.scroll.refresh(); //刷新
+    },
+
+    /*
+      以下是网络请求相关方法
+    */
     getHomeMultidata() {
       getHomeMultidata().then((res) => {
         this.banners = res.data.banner.list;
@@ -93,8 +118,9 @@ export default {
     getHomeGoods(type) {
       const page = this.goods[type].page + 1;
       getHomeGoods(type, page).then((res) => {
-        this.goods[type].list.push(...res.data.list); //这句话的意思就是把拿到的第一页的30条数据进行结构，边城一个个单独的元素，然后通过push，添加到goods对应类型的list中进行保存
+        this.goods[type].list.push(...res.data.list); //这句话的意思就是把拿到的第一页的30条数据进行解构，边城一个个单独的元素，然后通过push，添加到goods对应类型的list中进行保存
         this.goods[type].page += 1;
+        this.$refs.scroll.finishPullUp(); //调用这个方法是为了可以一直上拉加载更多
       });
     },
   },
@@ -135,6 +161,6 @@ export default {
 /* .content {
   height: calc(100% - 93px);
   overflow: hidden;
-  margin-top: 51px;
+  margin-top: 44px;
 } */
 </style>
