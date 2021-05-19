@@ -1,6 +1,13 @@
 <template>
   <div id="home">
     <nav-bar class="home-nav"><div slot="center">购物街</div></nav-bar>
+    <tab-control
+      :titles="['流行', '新款', '精选']"
+      @tabClick="tabClick"
+      ref="tabControl1"
+      class="tab-control"
+      v-show="isTabFixed"
+    />
     <scroll
       class="content"
       ref="scroll"
@@ -9,13 +16,13 @@
       :pull-up-load="true"
       @pullingUp="loadMore"
     >
-      <home-swiper :banners="banners" />
+      <home-swiper :banners="banners" @swiperImageLoad="swiperImageLoad" />
       <recommend-view :recommends="recommends" />
       <feature-view />
       <tab-control
-        class="tab-control"
         :titles="['流行', '新款', '精选']"
         @tabClick="tabClick"
+        ref="tabControl2"
       />
       <good-list :goods="showGoods" />
     </scroll>
@@ -59,12 +66,26 @@ export default {
       },
       currentType: "pop",
       isShowBackTop: false,
+      tabOffsetTop: 0,
+      isTabFixed: false,
+      saveY: 0,
     };
   },
   computed: {
     showGoods() {
       return this.goods[this.currentType].list;
     },
+  },
+
+  destroyed() {
+    console.log("home destroyed");
+  },
+  activated() {
+    this.$refs.scroll.scroll.refresh();
+    this.$refs.scroll.scrollTo(0, this.saveY, 0);
+  },
+  deactivated() {
+    this.saveY = this.$refs.scroll.scroll.y;
   },
   //使用生命周期函数，当页面一旦创建好，就发送网络请求
   created() {
@@ -92,6 +113,8 @@ export default {
           this.currentType = "sell";
           break;
       }
+      this.$refs.tabControl1.currentIndex = index;
+      this.$refs.tabControl2.currentIndex = index;
     },
     backClick() {
       //scrollTo方法是就是指定页面滚到哪个坐标，第一个和第二个参数就是x和y坐标，第三个参数是滚动的时间
@@ -99,11 +122,18 @@ export default {
       this.$refs.scroll.scrollTo(0, 0, 500);
     },
     contentScroll(position) {
+      //1.判断BackTop是否显示
       this.isShowBackTop = -position.y > 1000; //加负号是y值始终是一个负值
+      //2.决定tabControl是否吸顶(position: fixed)
+      this.isTabFixed = -position.y > this.tabOffsetTop;
     },
     loadMore() {
       this.getHomeGoods(this.currentType);
       this.$refs.scroll.scroll.refresh(); //刷新
+    },
+    //获取tabControl的offsettop值，不能在mounted里面进行，因为虽然mounted是挂载，但是有可能图片还没有加载完成，特别是轮播图这样较大的图，这样获取的值会比真实值小，不太准确
+    swiperImageLoad() {
+      this.tabOffsetTop = this.$refs.tabControl2.$el.offsetTop;
     },
 
     /*
@@ -136,16 +166,12 @@ export default {
 .home-nav {
   background-color: var(--color-tint);
   color: white;
+
+  /* 在使用浏览器原生滚动时，为了让导航不跟随一起滚动，使用下面的属性，用了bscroll之后，就可以不用下面的属性了 */
   position: fixed; /*这句话的意思是上下滑动屏幕的时候让这个导航栏不要动*/
   left: 0;
   right: 0;
   top: 0;
-  z-index: 9;
-}
-
-.tab-control {
-  position: sticky;
-  top: 44px;
   z-index: 9;
 }
 
@@ -156,6 +182,10 @@ export default {
   bottom: 49px;
   left: 0;
   right: 0;
+}
+.tab-control {
+  position: relative;
+  z-index: 9;
 }
 
 /* .content {
