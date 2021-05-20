@@ -11,7 +11,7 @@ export function request(config) {
   //2.axios的拦截器
   //2.1请求拦截的作用
   instance.interceptors.request.use(config => {  //use函数有两个参数，这两个参数都是函数，名字怎么取都得行，但是第一个返回的好像就是配置，拦截成功调用第一个函数，拦截失败返回第二个函数
-    console.log(config);
+    //console.log(config);
 
     return config  //这里一定要记得返回config，因为拦截了，内部就没有config了
   }, err => {

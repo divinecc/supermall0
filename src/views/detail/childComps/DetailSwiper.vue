@@ -1,11 +1,9 @@
 <template>
-  <div class="detail-swiper">
-    <swiper>
-      <swiper-item v-for="(item, index) in topImages" :key="index">
-        <img :src="item" alt="" />
-      </swiper-item>
-    </swiper>
-  </div>
+  <swiper class="detail-swiper">
+    <swiper-item v-for="(item, index) in topImages" :key="index">
+      <img :src="item" alt="" />
+    </swiper-item>
+  </swiper>
 </template>
 
 <script>
@@ -27,5 +25,10 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
+.detail-swiper {
+  /*虽然不知道为什么，但是这的类名最好不要取成swiper，不然很有可能会报错*/
+  height: 300px;
+  overflow: hidden;
+}
 </style>

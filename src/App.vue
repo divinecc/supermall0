@@ -1,7 +1,7 @@
 <template>
   <div id="App">
     <!-- 用keep-alive是为了让跳转时，路由不会销毁 -->
-    <keep-alive>
+    <keep-alive exclude="Detail">
       <router-view />
     </keep-alive>
     <main-tab-bar />
