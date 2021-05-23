@@ -1,4 +1,5 @@
 <template>
+  <!-- 先判断有没有商品信息，因为有些商品是没有的 -->
   <div class="base-info" v-if="Object.keys(goods).length !== 0">
     <div class="info-title">{{ goods.title }}</div>
     <div class="info-price">
