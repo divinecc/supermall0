@@ -7,11 +7,6 @@
       @scroll="contentScroll"
       :probe-type="3"
     >
-      <ul>
-        <li v-for="(item, index) in $store.state.cartList" :key="index">
-          {{ item }}
-        </li>
-      </ul>
       <detail-swiper :top-images="topImages" />
       <detail-base-info :goods="goods" />
       <detail-shop-info :shop="shop" />
@@ -22,6 +17,7 @@
     </scroll>
     <detail-bottom-bar @addCart="addToCart" />
     <back-top @click.native="backClick" v-show="isShowBackTop" />
+    <!-- <toast :message="message" :show="show" /> -->
   </div>
 </template>
 
@@ -38,6 +34,7 @@ import DetailBottomBar from "./childComps/DetailBottomBar";
 import Scroll from "components/common/scroll/Scroll";
 import GoodsList from "components/content/goods/GoodsList";
 import BackTop from "components/content/backTop/BackTop";
+// import Toast from "components/common/toast/Toast";
 
 import {
   getDetail,
@@ -46,6 +43,8 @@ import {
   GoodsParam,
   getRecommend,
 } from "network/detail";
+
+import { mapActions, mapGetters } from "vuex";
 
 export default {
   name: "Detail",
@@ -61,6 +60,7 @@ export default {
     GoodsList,
     DetailBottomBar,
     BackTop,
+    // Toast,
   },
 
   data() {
@@ -76,6 +76,8 @@ export default {
       themeTopYs: [],
       currentIndex: 0,
       isShowBackTop: false,
+      // message: "",
+      // show: false,
     };
   },
 
@@ -129,6 +131,7 @@ export default {
   },
 
   methods: {
+    ...mapActions(["addCart"]),
     imageLoad() {
       this.$refs.scroll.scroll.refresh();
       this.$nextTick(() => {
@@ -182,7 +185,21 @@ export default {
 
       //2.将商品添加到购物车里面
       // this.$store.commit("addCart", product);  commit是同步操作
-      this.$store.dispatch("addCart", product); //dispatch处理的是异步操作
+      // this.$store.dispatch("addCart", product).then((res) => {
+      //   console.log(res);
+      // }); //dispatch处理的是异步操作
+      //用下面这个映射的方法
+      this.addCart(product).then((res) => {
+        // this.show = true;
+        // this.message = res;
+        // setTimeout(() => {
+        //   this.show = false;
+        //   this.message = "";
+        // }, 1500);
+        this.$toast.show(res, 2000); //因为show方法给了duration一个默认值，所以这的2000可以不用写，也可以写
+        //在actions里面定义的addCart，resolve里面的内容，就是这的res，可以是“添加了新的商品”，或者“当前的商品数量+1”
+        //所以可以直接把res作为show函数的参数,到时候toast弹窗弹出后显示的就是这里面的内容
+      });
     },
   },
 };
